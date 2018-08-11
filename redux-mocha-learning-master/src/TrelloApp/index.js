@@ -17,18 +17,20 @@ function TrelloApp(currState, action) {
       });
 
     case 'EDIT_BOARD':
-      currState.currentBoard.name = action.payload.name;
-      return currState;
+        let returnState1 = Object.assign({}, currState);
+        returnState1.currentBoard.name = action.payload.name;
+        return returnState1;
 
     case 'CREATE_LIST':
-      const board = currState.currentBoard;
-
-      currState.currentBoard.lists = [...currState.currentBoard.lists, {
-          id: '' + Math.random() * 89793113,
-          name: action.payload.name,
-          cards: []
-        }];
-      return currState;
+      return Object.assign({}, currState, {
+        currentBoard: Object.assign({}, currState.currentBoard, {
+          lists: [...currState.currentBoard.lists, {
+              id: '' + Math.random() * 89793113,
+              name: action.payload.name,
+              cards: []
+            }]
+        })
+      });
 
     case 'EDIT_CARD':
       const list1 = currState.currentBoard.lists.find(list => list.id === action.payload.listId);
@@ -57,13 +59,17 @@ function TrelloApp(currState, action) {
 
 
     case 'MOVE_LIST':
-      const lists = currState.currentBoard.lists;
-      const movingList = lists[action.payload.fromIndex];
-      let arrayAfterRemoving = [...lists.splice(0, action.payload.fromIndex), ...lists.slice(action.payload.fromIndex + 1)];
-      arrayAfterRemoving.splice(action.payload.toIndex, 0, movingList);
-      currState.currentBoard.lists = arrayAfterRemoving;
 
-      return currState;
+      const lists = Object.assign([], action.payload.newCurrState.currentBoard.lists);
+      const movingList = lists[action.payload.fromIndex];
+      let arrayAfterRemoving = [...lists.slice(0, action.payload.fromIndex), ...lists.slice(action.payload.fromIndex + 1)];
+      arrayAfterRemoving.splice(action.payload.toIndex, 0, movingList);
+
+      return Object.assign({}, action.payload.newCurrState, {
+        currentBoard: Object.assign({}, action.payload.newCurrState.currentBoard, {
+          lists: [...arrayAfterRemoving]
+        })
+      });
 
     case 'EDIT_LIST':
       const list2 = currState.currentBoard.lists.find(list => list.id === action.payload.listId);
@@ -85,13 +91,23 @@ function TrelloApp(currState, action) {
       });
 
     case 'MOVE_CARD':
-      const cards = currState.currentBoard.lists[2].cards;
+    const lists3 = action.payload.newCurrState.currentBoard.lists;
+    console.log(lists3);
+      const cards = lists3[1].cards;
       const movingList1 = cards[action.payload.fromIndex];
-      let arrayAfterRemoving1 = [...cards.splice(0, action.payload.fromIndex), ...cards.slice(action.payload.fromIndex + 1)];
-      arrayAfterRemoving1.splice(action.payload.toIndex, 0, movingList1);
-      currState.currentBoard.lists[2].cards = arrayAfterRemoving1;
+      let arrayAfterRemoving1 = [...cards.slice(0, action.payload.fromIndex), ...cards.slice(action.payload.fromIndex + 1)];
 
-      return currState;
+      arrayAfterRemoving1.splice(action.payload.toIndex, 0, movingList1);
+
+      const newList2 = Object.assign([], lists3, {
+        cards: [...arrayAfterRemoving1]
+      });
+
+      return Object.assign({}, currState, {
+        currentBoard: Object.assign({}, action.payload.newCurrState.currentBoard, {
+          lists: [...newList2]
+        })
+      });
     default:
       return currState;
   }

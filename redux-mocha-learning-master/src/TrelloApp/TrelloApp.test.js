@@ -1,9 +1,10 @@
 const { createStore } = require('redux');
 const TrelloApp = require('.');
 const should = require('chai').should();
+const deepFreeze = require('deep-freeze');
 
 describe('TrelloApp', function() {
-  
+
     const currState = {
         currentBoard: {
           id: 'b1',
@@ -25,6 +26,7 @@ describe('TrelloApp', function() {
           }]
         }
       };
+      deepFreeze(currState);
 
   const store = createStore(TrelloApp, currState);
 
@@ -37,7 +39,7 @@ describe('TrelloApp', function() {
       }
     };
 
-    
+
     store.dispatch(action);
 
     store.getState().should.have.property('currentBoard');
@@ -86,7 +88,7 @@ describe('TrelloApp', function() {
   });
 
   it('should CREATE_LIST', function() {
-
+      const listLength = store.getState().currentBoard.lists.length;
      const action = {
        type: 'CREATE_LIST',
        payload: {
@@ -97,9 +99,9 @@ describe('TrelloApp', function() {
      store.dispatch(action);
 
      store.getState().should.have.property('currentBoard');
-     store.getState().currentBoard.should.have.property('lists').and.be.an('array').of.length(3);
-     store.getState().currentBoard.lists[2].should.have.property('id');
-     store.getState().currentBoard.lists[2].should.have.property('name').and.equal('newlist');
+     store.getState().currentBoard.should.have.property('lists').and.be.an('array').of.length(listLength + 1);
+     store.getState().currentBoard.lists[listLength].should.have.property('id');
+     store.getState().currentBoard.lists[listLength].should.have.property('name').and.equal('newlist');
 
 
   });
@@ -122,45 +124,49 @@ describe('TrelloApp', function() {
   });
 
 
-  
+
 
   it('should MOVE_LIST', function() {
     const fromIndex = 0;
-    const toIndex = 2;
+    const toIndex = 1;
     const previousIndexList = store.getState().currentBoard.lists[fromIndex];
+    //console.log(currState.currentBoard.lists,"\n", store.getState().currentBoard.lists);
+    const listLength = store.getState().currentBoard.lists.length;
      const action = {
        type: 'MOVE_LIST',
        payload: {
          fromIndex: fromIndex,
-         toIndex: toIndex
+         toIndex: toIndex,
+         newCurrState: store.getState()
        }
      };
-     
+
      store.dispatch(action);
 
      store.getState().should.have.property('currentBoard');
-     store.getState().currentBoard.should.have.property('lists').and.be.an('array').of.length(3);
+     store.getState().currentBoard.should.have.property('lists').and.be.an('array').of.length(listLength);
      store.getState().currentBoard.lists[toIndex].should.have.property('id').and.equal(previousIndexList.id);
 
   });
-  
+
 
   it('should MOVE_CARD', function() {
     const fromIndex = 0;
-    const toIndex = 2;
-    const previousIndexCard = store.getState().currentBoard.lists[2].cards[fromIndex];
+    const toIndex = 1;
+    const previousIndexCard = store.getState().currentBoard.lists[1].cards[fromIndex];
     const action = {
       type: 'MOVE_CARD',
       payload: {
         fromIndex: fromIndex,
-        toIndex: toIndex
+        toIndex: toIndex,
+        newCurrState: store.getState()
       }
     };
 
     store.dispatch(action);
 
     store.getState().should.have.property('currentBoard');
-    store.getState().currentBoard.lists[2].should.have.property('cards').and.be.an('array').of.length(3);
-    store.getState().currentBoard.lists[2].cards[toIndex].should.have.property('id').and.equal(previousIndexCard.id);
+    store.getState().currentBoard.lists[1].should.have.property('cards').and.be.an('array').of.length(3);
+    store.getState().currentBoard.lists[1].cards[toIndex].should.have.property('id').and.equal(previousIndexCard.id);
   });
 });
