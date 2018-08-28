@@ -91,23 +91,18 @@ function TrelloApp(currState, action) {
       });
 
     case 'MOVE_CARD':
-    const lists3 = action.payload.newCurrState.currentBoard.lists;
-    console.log(lists3);
+    const currentState1 = action.payload.newCurrState;
+    const lists3 = currentState1.currentBoard.lists;
       const cards = lists3[1].cards;
       const movingList1 = cards[action.payload.fromIndex];
+      const index3 = currentState1.currentBoard.lists.indexOf(lists3);
       let arrayAfterRemoving1 = [...cards.slice(0, action.payload.fromIndex), ...cards.slice(action.payload.fromIndex + 1)];
 
       arrayAfterRemoving1.splice(action.payload.toIndex, 0, movingList1);
+      currentState1.currentBoard.lists[1].cards = arrayAfterRemoving1;
 
-      const newList2 = Object.assign([], lists3, {
-        cards: [...arrayAfterRemoving1]
-      });
+      return Object.assign({}, currState, currentState1);
 
-      return Object.assign({}, currState, {
-        currentBoard: Object.assign({}, action.payload.newCurrState.currentBoard, {
-          lists: [...newList2]
-        })
-      });
     default:
       return currState;
   }
